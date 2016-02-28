@@ -8,7 +8,9 @@ defmodule PhoenixBlog.PostController do
   plug :scrub_params, "comment" when action in [:add_comment]
 
   def index(conn, _params) do
-    posts = Repo.all(Post)
+    posts = Post
+    |> Post.count_comments
+    |> Repo.all
     render(conn, "index.html", posts: posts)
   end
 
@@ -31,8 +33,9 @@ defmodule PhoenixBlog.PostController do
   end
 
   def show(conn, %{"id" => id}) do
-    post = Repo.get!(Post, id)
-    render(conn, "show.html", post: post)
+    post = Repo.get!(Post, id) |> Repo.preload([:comments])
+    changeset = Comment.changeset(%Comment{})
+    render(conn, "show.html", post: post, changeset: changeset)
   end
 
   def edit(conn, %{"id" => id}) do

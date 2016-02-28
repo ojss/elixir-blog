@@ -1,6 +1,6 @@
 defmodule PhoenixBlog.Post do
   use PhoenixBlog.Web, :model
-
+  import Ecto.Query
   schema "posts" do
     field :title, :string
     field :body, :string
@@ -20,5 +20,12 @@ defmodule PhoenixBlog.Post do
   def changeset(model, params \\ :empty) do
     model
     |> cast(params, @required_fields, @optional_fields)
+  end
+
+  def count_comments(query) do
+    from p in query,
+    group_by: p.id,
+    left_join: c in assoc(p, :comments),
+    select: {p, count(c.id)}
   end
 end
